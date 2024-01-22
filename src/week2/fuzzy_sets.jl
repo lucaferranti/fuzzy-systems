@@ -2,379 +2,150 @@
 # v0.19.29
 
 #> [frontmatter]
-#> chapter = 1
-#> section = 3
-#> order = 3
-#> title = "Introduction to fuzzy logic"
-#> tags = ["week1", "fuzzy", "fuzzy logic"]
+#> chapter = "2"
+#> section = "1"
+#> order = "1"
+#> title = "Fuzzy Sets"
+#> tags = ["week2", "fuzzy", "sets"]
 #> layout = "layout.jlhtml"
+#> description = "introduction to fuzzy sets"
 
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 055ef0df-8ab8-4e54-a476-89d521f29ee0
-using PlutoTeachingTools, PlutoUI, Plots, FuzzyLogic
+# ╔═╡ f29e6db2-63dd-4488-b0e4-8f640a72d089
+using PlutoUI, FuzzyLogic, Plots,  LaTeXStrings
 
-# ╔═╡ 4f643fd4-1e8d-4304-961b-a30a37a58de3
+# ╔═╡ 73b85494-72ed-482b-86c7-981729c9ed40
 TableOfContents()
 
-# ╔═╡ 69bbd516-b824-4bb5-a232-df0d94b315d4
+# ╔═╡ efa41b7c-b8e4-11ee-26a5-35176b5f67b6
 md"""
-## Fuzzy predicates
+## From crisp sets...
 
-In fuzzy logic, the truth value of a predicate can be any real from the interval ``[0, 1]``. That means, fuzzy logic allows to express "partial truths". In fuzzy logic, we don't ask wether a statement is true or false, but rather *how true* that is.
+A set ``A`` is (informally) a collection of objects. Sets come with an operation ``\in``, which is used to determine whether an element ``x`` belongs to ``A`` or not. We write this as ``x \in A``. Hence, each object, either belongs too ``A`` or not. We call this a **crisp set**. For example,
 
-For example, the statement "the temperature is hot" could have
+- ``\mathbb{N}``: the set of natural numbers, we have ``1 \in \mathbb{N}``, but ``-1 \notin \mathbb{N}``
 
-- truth value ``1`` if the temperature is 40 C.
-- truth value ``0`` if the temperature is -40 C.
-- truth value ``0.5`` if the temperature is 20 C.
+We call **universe set** ``U`` the set of all objects. This can be thought as the universe where we work. Now we can define a few operations on sets
 
-## Membership functions
+- **Intersection**: ``A \cap B = \{x \in U | x \in A \land x \in B\}``
+- **Union**: ``A \cup B = \{x \in U | x \in A \lor x \in B\}``
+- **Complement**: ``\bar{A} = \{x \in U | x \notin A\}``
 
-To express the truth value of a predicate with use **membership functions**. Given a set ``A``, a membership function ``f`` is a function ``f: A \rightarrow [0, 1]``. That is
+Set theory is often considered the foundation of mathematics, the fundamental theory used to build everything else.
+
+## ... to fuzzy sets
+
+The caveat of set theory, is that the membership operation ``x \in A`` must be decidable, i.e. for every element ``x`` we must be able to determine if it belongs to ``A`` or not. This is unpractical for *imprecise sets* we may encounter in everyday life. For example, *the set of tall people*. Should someone 2 meters high belong to it? Someone 1.70 m high? Should they both belong as much to it?
+
+To model vague concepts, we introduce **fuzzy sets**
 
 $(
-Markdown.Admonition("info", "Membership Function", [md"A function ``f`` that maps the elements of a set ``A`` to the unit interval ``[0, 1]``"])
+Markdown.Admonition("info", "Fuzzy set", [md"A fuzzy set is a function ``A: U \rightarrow [0, 1]``"])
 )
 
-Membership functions are handy to express how the degree of truth varies over a variable.
+Note that the universe set ``U`` is a traditional crisp set. The definition may look a bit dry, so let us try to understand what it implies.
 
-For example, the predicate "the temperature is hot" could be represented by the following membership function
+For traditional sets, we had a simple relation ``x \in A`` telling us *whether* ``x`` is in ``A`` or not. For fuzzy sets, we have a function ``A(x)`` telling us *how much* an element belongs to ``A``. This is a generalization similar to last week, where we went from traditional logic to fuzzy logic. This function is called a **membership function**, like the ones we saw last week. Let us see now an example
+
+- The set of tall people, could be represented by the following membership function
+
 """
 
-# ╔═╡ 48c9e309-3458-4a58-880a-947452da1743
+# ╔═╡ 4318c916-f788-479d-ac32-4d6db587d8fa
 let
-	mf1 = SigmoidMF(1.0, 20.0)
-	plot(mf1, -50, 50)
-	xlabel!("Temperature")
-	ylabel!("Truth Value")
-	title!("The temperature is hot")
+	mf = LinearMF(150, 180)
+	plot(mf, 120, 210)
+	xlabel!("Height (cm)")
+	ylabel!("Membership degree")
+	title!("Tall people")
 end
 
-# ╔═╡ 6289afe2-69b6-4bf4-a8aa-d213f372b68e
+# ╔═╡ 035c2c77-9c66-44e7-9a4a-fdf30dcbccb9
 md"""
-### Some popular membership functions
-
-You can find a more complete list of membership functions [here](https://www.lucaferranti.com/FuzzyLogic.jl/dev/api/memberships/), here we show a few popular ones
-
-#### Triangular membership function
-
-A triangular shaped membership function is showed below
-"""
-
-# ╔═╡ 73ac5558-a3e4-4264-8e56-069e9a1b7818
-let
-	mf = TriangularMF(3, 5, 7)
-	plot(mf, 1, 9)
-end
-
-# ╔═╡ 53d69625-a69a-47ef-9001-2d8fa6d879b5
-md"""
-The triangular membership function can be represented by 3 parameters
-- left foot (``3`` in the example above)
-- peak (``5`` in the example above)
-- right foot (``7`` in the example above)
-
-#### Trapezoidal membership function
-
-Can be represented by 4 parameters
-
-- left foot (``1`` in the example below)
-- left shoulder (``3`` in the example below)
-- right shoulder (``7`` in the example below)
-- right foot (``9`` in the example below)
-"""
-
-# ╔═╡ 207d3136-da3b-41f8-8ba8-100db008764b
-let
-	mf = TrapezoidalMF(1, 3, 7, 9)
-	plot(mf, 0, 10)
-end
-
-# ╔═╡ 909be481-f6aa-4815-a96c-241887ddddaa
-md"""
-#### Gaussian membership function
-
-It is given by the equation ``e^{-\frac{(x-\mu)^2}{2\sigma^2}}``, it has two parameters
-
-- ``\mu``: mean
-- ``\sigma``: standard deviation
-"""
-
-# ╔═╡ 304d61ed-148d-4601-89d8-b9ec93aa4cdd
-let
-	mf = GaussianMF(5.0, 1.0)
-	plot(mf, 0, 10)
-end
-
-# ╔═╡ a7d9edad-fca1-4f2f-b15f-864920381784
-md"""
-#### Sigmoid membership function
-
-Given by the equation
-
-```math
-\frac{1}{1 + e^{a(x-c)}}
-```
-
-has parameters
-
-- ``c``: center of the sigmoid
-- ``a``: slope of the sigmoid
-"""
-
-# ╔═╡ 4ae03ca6-4129-4061-a435-42405f5074cd
-let
-	mf = SigmoidMF(2, 5)
-	plot(mf, 0, 10)
-end
-
-# ╔═╡ 0e18d7dc-d23d-4fd1-8756-41741ea6581a
-md"""
-#### Generalized Bell membership function
-
-Given by the equation
-
-```math
-\frac{1}{1 + \vert\frac{x-c}{a}\vert^{2b}}
-```
-
-the parameters are
-
-- ``a``: width of the curve (``2`` in the example below)
-- ``b``: slope of the curve (``4`` in the example below)
-- ``c``: center of the curve (``5`` in the example below)
-"""
-
-# ╔═╡ fe688f71-7f89-4dea-8c0e-0fbe090e7152
-let
-	mf = GeneralizedBellMF(2, 4, 5)
-    plot(mf, 0, 10)
-end
-
-# ╔═╡ d61058fb-2129-4972-86da-71825cf92617
-md"""
-### Membership functions concepts
-
-Here we describe some important concepts related to membership functions
-
-#### Support
-
-The **support** of a membership function ``f`` is the subset of the domain for which ``f(x) > 0``, that is
+According to this membership function, people less than ``150`` cm high do not belong to the set of tall people, people above ``180`` belong to it and people who are ``165`` high belong ``50\%`` to it.
 
 $(
-Markdown.Admonition("info", "Support", [md"``\{x\in A | f(x) > 0\}``"])
+Markdown.Admonition("warning", "Note!", [md"While in mathematics we are used to have one definition everything agrees on, fuzzy sets are... fuzzy! There is no *one universal definition* for a fuzzy set, but the membership function is a *modeling choice*. That is, when solving a problem with fuzzy logic, it is the engineer responsibility to find an appropriate definition. This can be sometimes tedious, hence later in the class we will also learn how to *automatically learn* membership functions from data."])
 )
 
-#### Core
+## Operations on fuzzy sets.
 
-The core of a membership function ``f`` is the subset of the domain for which ``f(x) = 1``, that is
+Let us now generalize crisp sets operations to fuzzy sets operations.
+
+### Intersection
 
 $(
-Markdown.Admonition("info", "Support", [md"``\{x\in A | f(x) > 0\}``"])
+Markdown.Admonition("info", "Fuzzy intersection", [md"``(A \cap B)(x) = T(A(x), B(x))``"])
 )
 
-#### Alpha - cut
-
-Subset of the domain for which ``f(x) \geq \alpha``.
-
-$(
-Markdown.Admonition("info", "alpha-cut", [md"``\{x\in A | f(x) \geq \alpha\}``"])
-)
-
-To practice a bit, let us consider the following membership function
+where ``T`` is a **T-norm**. The following plot shows an example of computing the intersection of two fuzzy sets using the minimum T-norm.
 """
 
-# ╔═╡ b6ee6e48-473c-4386-9a85-9c2ccdcdcc24
+# ╔═╡ 79d97fc5-d52b-47ab-a4c0-c8ca0a51d256
 let
-	mf = TriangularMF(2, 4, 6)
-	plot(mf, 0, 8)
-	plot!([3, 5], [0.5, 0.5], c=:red)
-end
-
-# ╔═╡ 09b08356-2d48-41a7-98fc-1490397b531a
-md"""
-For this membership function we have
-
-- **support**: interval ``(2, 6)``, (note the extrema are not included)
-- **core**: point ``x = 1``
-- **``\alpha``-cut** for ``\alpha=0.5``: interval ``[3, 5]`` (highlighted in red)
-"""
-
-# ╔═╡ b44235d0-b397-4cb3-b977-cc219251cf8e
-md"""
-#### Convex membership function
-
-$(
-Markdown.Admonition("info", "Convex membership function", [md"A membership function is **convex** iff for all ``\alpha \in [0, 1]``, its ``\alpha``-cut is a single interval"])
-)
-
-for example the triangular membership function of the example before is convex, because all its alpha cuts are a single interval (imagine sliding the red line vertically). Consider however the following function.
-"""
-
-# ╔═╡ e9c48a68-8e53-480a-95a1-2cd494f9f87e
-let
-	mf1 = TriangularMF(2, 4, 6)
+	mf1 = TriangularMF(3, 5, 7)
 	mf2 = TriangularMF(4, 6, 8)
-	plot(x -> max(mf1(x), mf2(x)), 0, 10)
-    plot!([3.5, 4.5], [0.75, 0.75], c=:red)
-	plot!([5.5, 6.5], [0.75, 0.75], c=:red)
+	plot(x -> mf1(x), 0, 10, label="A")
+	plot!(x -> mf2(x), 0, 10, label="B")
+	plot!(x -> min(mf1(x), mf2(x)), 0, 10, label="A ∩ B")
 end
 
-# ╔═╡ 26dc1f94-2ae0-4507-8927-29b13adbf59b
+# ╔═╡ 89b931a7-e1d0-466b-bd9f-83db1f8585b3
 md"""
-In this case, for ``\alpha=0.75``, the ``\alpha``-cut is composed by the union of two disjoint intervals ``[3.5, 4.5] \cup [5.5, 6.5]``, hence the membership function is not convex.
-
-$(danger("This definition of convex membership function differs from the definition of a convex function used e.g. in optimization theory"))
-"""
-
-# ╔═╡ b88155ab-47ca-46cf-88d0-6c2bc1d8ed9e
-md"""
-## Fuzzy logic connectives
-
-Let us now learn how we can combine multiple statements using fuzzy logic. First some notation
+### Union
 
 $(
-Markdown.Admonition("info", "Truth value", [md"Given a proposition ``P``, we write ``\mu(P) = v`` to indicate that the *truth value* of ``P`` is ``v 
-\in [0, 1]``, for example ``\mu(P) = 0.75``"])
+Markdown.Admonition("info", "Fuzzy union", [md"``(A \cup B)(x) = S(A(x), B(x))``"])
 )
 
-Now we can start definiting logical operators
-
-### Negation
-
-While other definitions can be found, we will limit ourselves to the most common one
-
-$(
-Markdown.Admonition("info", "Fuzzy negation", [md"``\mu(\neg P) = 1 - \mu(P)``"])
-)
-
-### Conjunction
-
-There is not a unique definition to define a fuzzy and (conjunction). However, we can define some properties we want it to satisfy and find a *family of functions* satisfying these properties. A function that is a suitable candidate for definition a fuzzy conjunction is called **T-norm**
-
+where ``S`` is an **S-norm**. The following plot shows an example of computing the intersection of two fuzzy sets using the maximum S-norm.
 """
 
-# ╔═╡ 4753a46d-960a-41b1-8ab0-f6e53d46c785
+# ╔═╡ 1f341b9b-f22a-4803-a902-c70a0c8c75ce
 let
-def = md"""
-A function ``T: [0, 1] \times [0, 1] \rightarrow [0, 1]`` is a T-norm iff
-
-1. **Commutative**: ``T(x, y) = T(y, x)``
-2. **Associative**: ``T(T(x, y), z) = T(x, T(y, z))``
-3. **Monotone**: if ``x < y`` and ``x' < y'``, then ``T(x, x') < T(y, y')``
-4. **neutral element 1**: ``T(x, 1) = T(x)``
-"""
-
-def_box = Markdown.Admonition("info", "T-norm", [def])
-
-md"""
-$def_box
-"""
+	mf1 = TriangularMF(3, 5, 7)
+	mf2 = TriangularMF(4, 6, 8)
+	plot(x -> mf1(x), 0, 10, label="A")
+	plot!(x -> mf2(x), 0, 10, label="B")
+	plot!(x -> max(mf1(x), mf2(x)), 0, 10, label="A ∩ B")
 end
 
-# ╔═╡ 04a7c8e9-5fef-4b16-8fca-b224107607cc
+# ╔═╡ 332c8501-a462-41a9-a54e-19cb470e72b3
 md"""
-Once we have a T-norm, we can define conjunction as
-
-```math
-\mu(P\land Q) = T(\mu(P), \mu(Q))
-```
-
-here are some popular T-norm. You can find a more complete list [here](https://www.lucaferranti.com/FuzzyLogic.jl/dev/api/logical/#Conjuction-methods)
+### Complement
 
 $(
-Markdown.Admonition("danger", "Stop and think", [md"Why is a T-norm a good candidate for defining conjunction? Go through each bullet of the definition and ask yourself, *why do I want this?*"])
+Markdown.Admonition("info", "Fuzzy complement", [md"``\bar{A}(x) = 1 - A(x)``"])
 )
-
-#### Minimum T-norm
-
-Also called *Gödel T-norm*: defined as ``T(x, y) = \min(x, y)``
-
-#### Łukasiewicz T-norm
-
-Defined as ``T(x, y) = \max(x+y-1, 0)``.
-
-Side note that "Ł" is pronounced "u" as in the English word "do"
-
-#### Product T-norm
-
-Defined as ``T(x, y) = xy``
 """
 
-# ╔═╡ 9d3e3d6d-4f22-4964-a544-a423546f845c
-md"""
-### Disjunction
-
-Like conjunction, to define **disjunction** (or), we identify a family of suitable candidates, called *S-norm* (or *T-conorm*)
-"""
-
-# ╔═╡ a04f1f46-e41e-47dc-a36d-8c017540140c
+# ╔═╡ 79565bc8-e952-466d-bc00-82b5f0e35cd6
 let
-def = md"""
-A function ``S: [0, 1] \times [0, 1] \rightarrow [0, 1]`` is a S-norm iff
-
-1. **Commutative**: ``S(x, y) = S(y, x)``
-2. **Associative**: ``S(T(x, y), z) = S(x, S(y, z))``
-3. **Monotone**: if ``x < y`` and ``x' < y'``, then ``S(x, x') < S(y, y')``
-4. **has neutral elment 0**: ``S(x, 0) = S(x)``
-"""
-
-def_box = Markdown.Admonition("info", "S-norm", [def])
-
-md"""
-$def_box
-
-Note the only difference between a T- and S- norm is the neutral element.
-
-Again, go through the bullet points of the definition and ask yourself why they form a good set of requirements for defining disjunction.
-"""
+		mf1 = TriangularMF(3, 5, 7)
+	plot(x -> mf1(x), 0, 10, label="A")
+	plot!(x -> 1 - mf1(x), 0, 10, label="\$\\overline{A}\$")
 end
 
-# ╔═╡ 6d8ac233-2ec1-4e31-bab7-af496faaea5b
+# ╔═╡ 61ead58a-7280-4838-a27d-0c6bf63bc9be
 md"""
-Now we list some popular S-norms, a more compehensive list can be found [here](https://www.lucaferranti.com/FuzzyLogic.jl/dev/api/logical/#Disjunction-methods)
-
-- **maximum S-norm**: ``S(x, y) = \max(x, y)``
-- **Bounded sum S-norm**: ``S(x, y) = \min(x+y, 1)``
-- **Probabilistic sum S-norm**: ``S(x, y) = x + y - xy
-
-### Conjunction / Disjunction pair
-
-As you may suspect, T-norms and S-norms come in pairs. That is, once you fix a T-norm for conjunction, you also have a corresponding S-norm for disjunctions. The corresponding S-norm is defined to satisfy the following property.
-
-```math
-S(x, y) = 1 - T(1-x, 1-y)
-```
-
-$(
-Markdown.Admonition("danger", "Stop and think", [md"What is the logical interpretation of the above relation?"])
-)
-
-The following table summarizes how the T- and S-norms presented so far are paired
-
-|T-norm|S-norm|
-|:----:|:----:|
-|Minimum | Maximum |
-|Łukasiewicz|Bounded sum|
-|Product | Probabilistic sum|
-
+$(Markdown.Admonition("danger", "Stop and think", [md"Recall the definition of convex membership function. Is the intersection of convex fuzzy sets always convex? What about the union? and the complement?"]))
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 FuzzyLogic = "271df9f8-4390-4196-9d4f-bdd0b67035b3"
+LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 FuzzyLogic = "~0.1.2"
+LaTeXStrings = "~1.3.1"
 Plots = "~1.39.0"
-PlutoTeachingTools = "~0.2.11"
-PlutoUI = "~0.7.51"
+PlutoUI = "~0.7.55"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -383,13 +154,13 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.4"
 manifest_format = "2.0"
-project_hash = "5cc6af89f428724061de93603fd99bf50fd6320d"
+project_hash = "d30ac2d55871e543baf876e2b30e22b5526c556d"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
-git-tree-sha1 = "8eaf9f1b4921132a4cff3f36a1d9ba923b14a481"
+git-tree-sha1 = "c278dfab760520b8bb7e9511b968bf4ba38b7acc"
 uuid = "6e696c72-6542-2067-7265-42206c756150"
-version = "1.1.4"
+version = "1.2.3"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -417,12 +188,6 @@ deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jl
 git-tree-sha1 = "4b859a208b2397a7a623a03449e4636bdb17bcf2"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.16.1+1"
-
-[[deps.CodeTracking]]
-deps = ["InteractiveUtils", "UUIDs"]
-git-tree-sha1 = "d730914ef30a06732bdd9f763f6cc32e92ffbff1"
-uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
-version = "1.3.1"
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
@@ -512,10 +277,6 @@ deps = ["Indexing", "Random", "Serialization"]
 git-tree-sha1 = "e82c3c97b5b4ec111f3c1b55228cebc7510525a2"
 uuid = "85a47980-9c8c-11e8-2b9f-f7ca1fa99fb4"
 version = "0.3.25"
-
-[[deps.Distributed]]
-deps = ["Random", "Serialization", "Sockets"]
-uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[deps.DocStringExtensions]]
 deps = ["LibGit2"]
@@ -652,21 +413,21 @@ version = "2.8.1+1"
 
 [[deps.Hyperscript]]
 deps = ["Test"]
-git-tree-sha1 = "8d511d5b81240fc8e6802386302675bdf47737b9"
+git-tree-sha1 = "179267cfa5e712760cd43dcae385d7ea90cc25a4"
 uuid = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
-version = "0.0.4"
+version = "0.0.5"
 
 [[deps.HypertextLiteral]]
 deps = ["Tricks"]
-git-tree-sha1 = "c47c5fa4c5308f27ccaac35504858d8914e102f9"
+git-tree-sha1 = "7134810b1afce04bbc1045ca1985fbe81ce17653"
 uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
-version = "0.9.4"
+version = "0.9.5"
 
 [[deps.IOCapture]]
 deps = ["Logging", "Random"]
-git-tree-sha1 = "d75853a0bdbfb1ac815478bacd89cd27b550ace6"
+git-tree-sha1 = "8b72179abc660bfab5e28472e019392b97d0985c"
 uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
-version = "0.2.3"
+version = "0.2.4"
 
 [[deps.Indexing]]
 git-tree-sha1 = "ce1566720fd6b19ff3411404d4b977acd4814f9f"
@@ -706,12 +467,6 @@ git-tree-sha1 = "60b1194df0a3298f460063de985eae7b01bc011a"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
 version = "3.0.1+0"
 
-[[deps.JuliaInterpreter]]
-deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
-git-tree-sha1 = "6a125e6a4cb391e0b9adbd1afa9e771c2179f8ef"
-uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
-version = "0.9.23"
-
 [[deps.LAME_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "f6250b16881adf048549549fba48b1161acdac8c"
@@ -737,26 +492,22 @@ uuid = "dd4b983a-f0e5-5f8d-a1b7-129d4a5fb1ac"
 version = "2.10.1+0"
 
 [[deps.LaTeXStrings]]
-git-tree-sha1 = "f2355693d6778a178ade15952b7ac47a4ff97996"
+git-tree-sha1 = "50901ebc375ed41dbf8058da26f9de442febbbec"
 uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
-version = "1.3.0"
+version = "1.3.1"
 
 [[deps.Latexify]]
 deps = ["Formatting", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Printf", "Requires"]
-git-tree-sha1 = "8c57307b5d9bb3be1ff2da469063628631d4d51e"
+git-tree-sha1 = "f428ae552340899a935973270b8d98e5a31c49fe"
 uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
-version = "0.15.21"
+version = "0.16.1"
 
     [deps.Latexify.extensions]
     DataFramesExt = "DataFrames"
-    DiffEqBiologicalExt = "DiffEqBiological"
-    ParameterizedFunctionsExt = "DiffEqBase"
     SymEngineExt = "SymEngine"
 
     [deps.Latexify.weakdeps]
     DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-    DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
-    DiffEqBiological = "eb300fae-53e8-50a0-950c-e21f52c2b7e0"
     SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
 
 [[deps.LibCURL]]
@@ -864,12 +615,6 @@ git-tree-sha1 = "c1dd6d7978c12545b4179fb6153b9250c96b0075"
 uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
 version = "1.0.3"
 
-[[deps.LoweredCodeUtils]]
-deps = ["JuliaInterpreter"]
-git-tree-sha1 = "60168780555f3e663c536500aa790b6368adc02a"
-uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
-version = "2.3.0"
-
 [[deps.MIMEs]]
 git-tree-sha1 = "65f28ad4b594aebe22157d6fac869786a255b7eb"
 uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
@@ -877,9 +622,9 @@ version = "0.1.4"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
-git-tree-sha1 = "42324d08725e200c23d4dfb549e0d5d89dede2d2"
+git-tree-sha1 = "2fa9ee3e63fd3a4f7a9a4f4744a52f4856de82df"
 uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
-version = "0.5.10"
+version = "0.5.13"
 
 [[deps.Markdown]]
 deps = ["Base64"]
@@ -959,9 +704,9 @@ uuid = "91d4177d-7536-5919-b921-800302f37372"
 version = "1.3.2+0"
 
 [[deps.OrderedCollections]]
-git-tree-sha1 = "d321bf2de576bf25ec4d3e4360faca399afca282"
+git-tree-sha1 = "dfdf5519f235516220579f949664f1bf44e741c5"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
-version = "1.6.0"
+version = "1.6.3"
 
 [[deps.PCRE2_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -976,9 +721,9 @@ version = "1.0.0"
 
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
-git-tree-sha1 = "4b2e829ee66d4218e0cef22c0a64ee37cf258c29"
+git-tree-sha1 = "8489905bcdbcfac64d1daa51ca07c0d8f0283821"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "2.7.1"
+version = "2.8.1"
 
 [[deps.Pipe]]
 git-tree-sha1 = "6842804e7867b115ca9de748a0cf6b364523c16d"
@@ -1028,41 +773,23 @@ version = "1.39.0"
     ImageInTerminal = "d8c32880-2388-543b-8c61-d9f865259254"
     Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
-[[deps.PlutoHooks]]
-deps = ["InteractiveUtils", "Markdown", "UUIDs"]
-git-tree-sha1 = "072cdf20c9b0507fdd977d7d246d90030609674b"
-uuid = "0ff47ea0-7a50-410d-8455-4348d5de0774"
-version = "0.0.5"
-
-[[deps.PlutoLinks]]
-deps = ["FileWatching", "InteractiveUtils", "Markdown", "PlutoHooks", "Revise", "UUIDs"]
-git-tree-sha1 = "8f5fa7056e6dcfb23ac5211de38e6c03f6367794"
-uuid = "0ff47ea0-7a50-410d-8455-4348d5de0420"
-version = "0.1.6"
-
-[[deps.PlutoTeachingTools]]
-deps = ["Downloads", "HypertextLiteral", "LaTeXStrings", "Latexify", "Markdown", "PlutoLinks", "PlutoUI", "Random"]
-git-tree-sha1 = "88222661708df26242d0bfb9237d023557d11718"
-uuid = "661c6b06-c737-4d37-b85c-46df65de6f69"
-version = "0.2.11"
-
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
-git-tree-sha1 = "b478a748be27bd2f2c73a7690da219d0844db305"
+git-tree-sha1 = "68723afdb616445c6caaef6255067a8339f91325"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.51"
+version = "0.7.55"
 
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
-git-tree-sha1 = "9673d39decc5feece56ef3940e5dafba15ba0f81"
+git-tree-sha1 = "03b4c25b43cb84cee5c90aa9b5ea0a78fd848d2f"
 uuid = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
-version = "1.1.2"
+version = "1.2.0"
 
 [[deps.Preferences]]
 deps = ["TOML"]
-git-tree-sha1 = "7eb1686b4f04b82f96ed7a4ea5890a4f0c7a09f1"
+git-tree-sha1 = "00805cd429dcb4870060ff49ef443486c262e38e"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
-version = "1.4.0"
+version = "1.4.1"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -1110,12 +837,6 @@ deps = ["UUIDs"]
 git-tree-sha1 = "838a3a4188e2ded87a4f9f184b4b0d78a1e91cb7"
 uuid = "ae029012-a4dd-5104-9daa-d747884805df"
 version = "1.3.0"
-
-[[deps.Revise]]
-deps = ["CodeTracking", "Distributed", "FileWatching", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "Pkg", "REPL", "Requires", "UUIDs", "Unicode"]
-git-tree-sha1 = "1e597b93700fa4045d7189afa7c004e0584ea548"
-uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
-version = "3.5.3"
 
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
@@ -1206,14 +927,14 @@ weakdeps = ["Random", "Test"]
     TestExt = ["Test", "Random"]
 
 [[deps.Tricks]]
-git-tree-sha1 = "aadb748be58b492045b4f56166b5188aa63ce549"
+git-tree-sha1 = "eae1bb484cd63b36999ee58be2de6c178105112f"
 uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
-version = "0.1.7"
+version = "0.1.8"
 
 [[deps.URIs]]
-git-tree-sha1 = "074f993b0ca030848b897beff716d93aca60f06a"
+git-tree-sha1 = "67db6cc7b3821e19ebe75791a9dd19c9b1188f2b"
 uuid = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
-version = "1.4.2"
+version = "1.5.1"
 
 [[deps.UUIDs]]
 deps = ["Random", "SHA"]
@@ -1545,31 +1266,16 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╟─055ef0df-8ab8-4e54-a476-89d521f29ee0
-# ╟─4f643fd4-1e8d-4304-961b-a30a37a58de3
-# ╟─69bbd516-b824-4bb5-a232-df0d94b315d4
-# ╟─48c9e309-3458-4a58-880a-947452da1743
-# ╟─6289afe2-69b6-4bf4-a8aa-d213f372b68e
-# ╟─73ac5558-a3e4-4264-8e56-069e9a1b7818
-# ╟─53d69625-a69a-47ef-9001-2d8fa6d879b5
-# ╟─207d3136-da3b-41f8-8ba8-100db008764b
-# ╟─909be481-f6aa-4815-a96c-241887ddddaa
-# ╟─304d61ed-148d-4601-89d8-b9ec93aa4cdd
-# ╟─a7d9edad-fca1-4f2f-b15f-864920381784
-# ╟─4ae03ca6-4129-4061-a435-42405f5074cd
-# ╟─0e18d7dc-d23d-4fd1-8756-41741ea6581a
-# ╟─fe688f71-7f89-4dea-8c0e-0fbe090e7152
-# ╟─d61058fb-2129-4972-86da-71825cf92617
-# ╟─b6ee6e48-473c-4386-9a85-9c2ccdcdcc24
-# ╟─09b08356-2d48-41a7-98fc-1490397b531a
-# ╟─b44235d0-b397-4cb3-b977-cc219251cf8e
-# ╟─e9c48a68-8e53-480a-95a1-2cd494f9f87e
-# ╟─26dc1f94-2ae0-4507-8927-29b13adbf59b
-# ╟─b88155ab-47ca-46cf-88d0-6c2bc1d8ed9e
-# ╟─4753a46d-960a-41b1-8ab0-f6e53d46c785
-# ╟─04a7c8e9-5fef-4b16-8fca-b224107607cc
-# ╟─9d3e3d6d-4f22-4964-a544-a423546f845c
-# ╟─a04f1f46-e41e-47dc-a36d-8c017540140c
-# ╟─6d8ac233-2ec1-4e31-bab7-af496faaea5b
+# ╟─f29e6db2-63dd-4488-b0e4-8f640a72d089
+# ╟─73b85494-72ed-482b-86c7-981729c9ed40
+# ╟─efa41b7c-b8e4-11ee-26a5-35176b5f67b6
+# ╟─4318c916-f788-479d-ac32-4d6db587d8fa
+# ╟─035c2c77-9c66-44e7-9a4a-fdf30dcbccb9
+# ╟─79d97fc5-d52b-47ab-a4c0-c8ca0a51d256
+# ╟─89b931a7-e1d0-466b-bd9f-83db1f8585b3
+# ╟─1f341b9b-f22a-4803-a902-c70a0c8c75ce
+# ╟─332c8501-a462-41a9-a54e-19cb470e72b3
+# ╟─79565bc8-e952-466d-bc00-82b5f0e35cd6
+# ╟─61ead58a-7280-4838-a27d-0c6bf63bc9be
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
