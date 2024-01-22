@@ -290,7 +290,7 @@ Markdown.Admonition("danger", "Stop and think", [md"Why is a T-norm a good candi
 
 #### Minimum T-norm
 
-Also called *Gödel T-norm*: defined as ``T(x, y) = min(x, y)``
+Also called *Gödel T-norm*: defined as ``T(x, y) = \min(x, y)``
 
 #### Łukasiewicz T-norm
 

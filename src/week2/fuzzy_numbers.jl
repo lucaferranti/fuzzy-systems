@@ -66,8 +66,8 @@ let
 	mf4 = x -> -0.25(x-5)^2+3
 	p1 = plot(mf1, 0, 10)
 	p2 = plot(mf2, 0, 10)
-	p3 = plot(mf3, 0, 10)
-	p4 = plot(mf4, 0, 10)
+	p3 = plot(mf3, 0, 10, legend=nothing)
+	p4 = plot(mf4, 0, 10, legend=nothing)
 	plot(p1, p2, p3, p4; layout=(2, 2))
 end
 
