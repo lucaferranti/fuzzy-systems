@@ -1,6 +1,7 @@
 [Export]
 baked_state = false
 baked_notebookfile = false
+slider_server_url="https://fuzzy.edge.silentech.gr"
 offer_binder = true
 ignore_cache = [
     "index.jl",
