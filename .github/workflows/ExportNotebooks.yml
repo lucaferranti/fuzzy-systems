@@ -21,7 +21,7 @@ jobs:
             - name: 🙌 Install Julia
               uses: julia-actions/setup-julia@v1
               with:
-                  version: "1.8"
+                  version: "1.10"
 
             - name: ⏱ Cache notebook states
               uses: actions/cache@v2
@@ -45,7 +45,8 @@ jobs:
                   Pkg.instantiate();
 
                   include("./generate.jl")'
-
+            - name: Patch SliderServer URL
+              run: find -name "*.html" -exec sed -i "s/window.pluto_slider_server_url = undefined;/window.pluto_slider_server_url = \"https:\/\/fuzzy.edge.silentech.gr\";/g" {} \;
             
             - name: 📰 Upload site generation report
               uses: actions/upload-artifact@v2

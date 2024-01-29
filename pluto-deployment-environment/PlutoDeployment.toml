@@ -6,6 +6,8 @@ offer_binder = true
 ignore_cache = [
     "index.jl",
 ]
+slider_server_url="https://fuzzy.edge.silentech.gr"
+
 create_index = false
 exclude = [
     # these are in the repo but not used on the website
@@ -14,7 +16,7 @@ exclude = [
 ]
 
 [SliderServer]
-port = 8080
+port = 50001
 host = "0.0.0.0"
 exclude=[
     # these are in the repo but not used on the website
