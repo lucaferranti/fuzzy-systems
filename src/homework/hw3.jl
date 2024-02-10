@@ -4,7 +4,7 @@
 #> [frontmatter]
 #> homework_number = "3"
 #> order = "1"
-#> title = "Basic fuzzy logic concepts"
+#> title = "Building a Mamdani inference system"
 #> tags = ["homeworks", "FuzzyLogic.jl", "Mamdani inference system", "week3"]
 #> layout = "layout.jlhtml"
 #> description = "Week 3 homework: Mamdani inference system"
